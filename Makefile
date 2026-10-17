@@ -34,7 +34,14 @@ hello120hz_FILES = Preferences/Hello120HzPreferences.mm Preferences/H120Settings
 hello120hz_CFLAGS = -fobjc-arc
 hello120hz_CCFLAGS = -std=c++17
 hello120hz_FRAMEWORKS = UIKit Foundation UniformTypeIdentifiers QuartzCore CoreGraphics
-hello120hz_PRIVATE_FRAMEWORKS = Preferences
+# theos/sdks 的 iPhoneOS16.5.sdk 不含 Preferences.framework（私有框架、SDK 不随附），
+# 不能用 PRIVATE_FRAMEWORKS=Preferences（会导致 -framework Preferences 链接失败）。
+# 该 bundle 运行时注入 Preferences.app，宿主已载有 Preferences.framework，故用
+# -undefined dynamic_lookup 让链接器放行这些符号，运行时由宿主解析。
+hello120hz_LDFLAGS = -Wl,-undefined,dynamic_lookup
+# 用源码自带的 Info.plist（含 NSPrincipalClass=hello120hzPreRootListController），
+# 否则 theos 自动生成的默认 plist 会丢失入口类，设置根控制器加载不出来。
+hello120hz_INFO_PLIST_PATH = Preferences/Resources/Info.plist
 hello120hz_INSTALL_PATH = /Library/PreferenceBundles
 hello120hz_RESOURCE_DIRS = Preferences/Resources
 
