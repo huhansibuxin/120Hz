@@ -14,20 +14,16 @@ export THEOS_PACKAGE_SCHEME
 # 否则 Theos 实例变量前缀撞名（tweak 与 bundle 不能同前缀）。
 TWEAK_NAME = h120hz
 h120hz_FILES = Core/H120Hooks.mm Core/H120Recording.mm Core/H120Policy.c Core/H120RangeTrampolines.S Shared/H120Preferences.mm
-# 全局：ARC + 容忍告警。注意 -std=c++17 不放在这里，否则会误伤 .c / .S 文件。
-h120hz_CFLAGS = -fobjc-arc -Wno-error
-# C++/ObjC++（.mm）统一按 C++17 编译：theos CI 的 clang 默认 std 偏低，会把 .mm 当 C++98 编，
-# 导致 alignas/nullptr/std::atomic 等 C++11+ 语法报 “a type specifier is required”。
-h120hz_CXXFLAGS = -std=c++17
-# 各 .mm 文件再单独补 -std=c++17，覆盖 Theos 不同版本对 flag 路由的差异（双保险）。
-h120hz_CFLAGS_Core_H120Hooks_mm = -std=c++17
-h120hz_CFLAGS_H120Hooks_mm = -std=c++17
-h120hz_CFLAGS_Shared_H120Preferences_mm = -std=c++17
-h120hz_CFLAGS_H120Preferences_mm = -std=c++17
-# H120Recording.mm 含显式 release，必须 MRC（-fno-objc-arc 覆盖全局的 -fobjc-arc，后者在后生效）；
-# 同时仍保留 C++17。同样给两种变量名上值。
-h120hz_CFLAGS_Core_H120Recording_mm = -fno-objc-arc -std=c++17
-h120hz_CFLAGS_H120Recording_mm = -fno-objc-arc -std=c++17
+# 全局：仅容忍告警。不放 -fobjc-arc / -std，避免误伤 .c / .S 文件（ARC 与 C++ 标准均走下方细分）。
+h120hz_CFLAGS = -Wno-error
+# C++17 只作用于 .mm/.cpp（rules.mk 里 ALL_CCFLAGS 含 h120hz_CCFLAGS，且 .c/.S 编译规则不引用 CCFLAGS）。
+# theos CI 的 clang 默认 std 偏低，会把 .mm 当 C++98 编，导致 constexpr/auto/alias/alignas 报错。
+h120hz_CCFLAGS = -std=c++17
+# Theos per-file flag 变量名 = 源文件路径 + _CFLAGS（无实例前缀，见 rules.mk:$($(<)_CFLAGS)）：
+# 两个普通 .mm 走 ARC；H120Recording.mm 含显式 release 必须 MRC（-fno-objc-arc，其源文件内置 #error 强制校验）。
+Core/H120Hooks.mm_CFLAGS = -fobjc-arc
+Shared/H120Preferences.mm_CFLAGS = -fobjc-arc
+Core/H120Recording.mm_CFLAGS = -fno-objc-arc
 h120hz_FRAMEWORKS = Foundation CoreFoundation QuartzCore CoreGraphics AVFoundation CoreMedia
 h120hz_LIBRARIES = substrate
 h120hz_INSTALL_PATH = /Library/MobileSubstrate/DynamicLibraries
