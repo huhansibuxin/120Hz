@@ -15,7 +15,7 @@
 #include "H120Recording.h"
 
 extern "C" {
-alignas(4) uint32_t H120ActiveFPSBits = 0;
+uint32_t H120ActiveFPSBits = 0;
 void *H120OriginalRangeTimingsBB = nullptr;
 void *H120OriginalRangeTimingsB = nullptr;
 void *H120OriginalRangeConvert = nullptr;
