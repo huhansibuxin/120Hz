@@ -47,6 +47,12 @@ jobs:
           mv sdks-master/iPhoneOS16.5.sdk .
           rm -rf sdks-master master.zip
 
+      - name: Fix DEBIAN script permissions
+        # git 在 Windows 上可能丢失执行位，导致 dpkg 报
+        # "maintainer script 'postinst' has bad permissions"。显式补回执行位。
+        run: |
+          chmod 0755 layout/DEBIAN/postinst 2>/dev/null || true
+
       - name: Build
         run: make package
 
