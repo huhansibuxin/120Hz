@@ -1,0 +1,10 @@
+Package: cn.zqbb.fix120hz
+Name: 120Hz
+Version: 3.3.4-1
+Architecture: iphoneos-arm64
+Description: Unlock dynamic refresh rate from 80Hz to 120Hz (event-driven policy).
+Maintainer: huhansibuxin
+Author: zqbb (orig) / huhansibuxin (build)
+Section: Tweaks
+Depends: ellekit, firmware (>= 15.0), preferenceloader, com.opa334.altlist
+Conflicts: cn.zqbb.fix120hz15, com.zqbb.fix120hz, com.zqbb.dynamic120hz

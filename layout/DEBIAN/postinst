@@ -1,0 +1,37 @@
+#!/bin/sh
+set -eu
+
+base="${DPKG_ROOT:-}"
+for candidate in "$base/.jbroot" "$base/var/jb"; do
+    if [ -d "$candidate/Library/MobileSubstrate/DynamicLibraries" ]; then
+        base="$candidate"
+        break
+    fi
+done
+if [ -z "$base" ] || [ "$base" = / ] || [ ! -d "$base/Library/MobileSubstrate/DynamicLibraries" ]; then
+    exit 1
+fi
+loader="$base/Library/MobileSubstrate/DynamicLibraries/h120hz.plist"
+directory="$base/var/mobile/Library/Preferences"
+preferences="$directory/cn.zqbb.fix120hz.injection.plist"
+legacy="$base/var/mobile/Hello120hz/h120hz.plist"
+
+mkdir -p "$directory"
+if [ ! -e "$preferences" ]; then
+    if [ -f "$legacy" ]; then
+        cp "$legacy" "$preferences"
+    elif [ -f "$loader" ]; then
+        cp "$loader" "$preferences"
+    else
+        cp "$base/Library/PreferenceBundles/hello120hz.bundle/DefaultInjection.plist" "$preferences"
+    fi
+fi
+chown mobile:mobile "$directory" "$preferences"
+chmod 755 "$directory"
+chmod 644 "$preferences"
+
+if [ ! -L "$loader" ] || [ "$(readlink "$loader")" != "../../../var/mobile/Library/Preferences/cn.zqbb.fix120hz.injection.plist" ]; then
+    rm -f "$loader"
+    ln -s "../../../var/mobile/Library/Preferences/cn.zqbb.fix120hz.injection.plist" "$loader"
+fi
+exit 0
